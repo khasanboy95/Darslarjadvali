@@ -19,121 +19,81 @@ function AttendanceTracker() {
     { id: 15, name: "Xoshimjonova Xadicha", phone: "(941) 080-47-46" }
   ];
 
-  const [currentYear, setCurrentYear] = useState("2025");
-  const months = ['Yen', 'Fev', 'Mar', 'Apr', 'May', 'Iyun', 'Iyul', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek'];
-  const dates = ['03 fev', '05 fev', '07 fev', '10 fev', '12 fev', '14 fev', '17 fev', '19 fev', '21 fev', '24 fev', '26 fev', '28 fev'];
-
-  const tabs = ['Davomat', 'Baholash', 'Uyga vazifa', 'Reyting', 'Imtixonlar', 'Mashqlar', 'Tarix', 'Izoh'];
-
   const [attendance, setAttendance] = useState(() => {
     const saved = localStorage.getItem('attendance');
     return saved ? JSON.parse(saved) : {};
   });
 
-  const toggleAttendance = (studentId) => {
-    const key = `${studentId}`;
-    let newStatus;
-    
-    if (!attendance[key]) newStatus = 'present';
-    else if (attendance[key] === 'present') newStatus = 'absent';
-    else newStatus = undefined;
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
 
+  const handleAttendance = (studentId, status) => {
     const newAttendance = {
       ...attendance,
-      [key]: newStatus
+      [`${selectedDate}-${studentId}`]: status
     };
     setAttendance(newAttendance);
     localStorage.setItem('attendance', JSON.stringify(newAttendance));
   };
 
+  const getStudentStatus = (studentId) => {
+    return attendance[`${selectedDate}-${studentId}`];
+  };
+
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <h1 className="text-xl font-bold mb-4">Hasanboy Yangi ertalab toq Preinter 13/15</h1>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Hasanboy Yangi ertalab toq Preinter 13/15</h1>
       
-      {/* Teacher Info */}
-      <div className="mb-4 text-sm">
-        <p>O'qituvchi: <span className="text-blue-500">Khasan Djemilov</span></p>
-        <p>Narx: 300 000 so'm</p>
-        <p>Vaqt: 13:30 - 15:00</p>
-        <p>Kurs: Pre-intermediate (Level 3)</p>
-        <p>Boshlnish sanasi: Nov 29, 2023</p>
-        <p>Xona: Birinchi xona</p>
-        <p>O'tilgan darslar: 124</p>
-        <p>Dars kunlari: <span className="text-green-600">Dushanba</span> <span className="text-green-600">Chorshanba</span> <span className="text-green-600">Juma</span></p>
-      </div>
+      <input
+        type="date"
+        value={selectedDate}
+        onChange={(e) => setSelectedDate(e.target.value)}
+        className="mb-4 p-2 border rounded"
+      />
 
-      {/* Tabs */}
-      <div className="flex border-b mb-4">
-        {tabs.map((tab, index) => (
-          <button
-            key={index}
-            className={`px-4 py-2 ${index === 0 ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500'}`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {/* Year and Months */}
-      <div className="flex items-center gap-2 mb-4">
-        <select 
-          value={currentYear}
-          onChange={(e) => setCurrentYear(e.target.value)}
-          className="border rounded px-2 py-1"
-        >
-          <option value="2025">2025</option>
-        </select>
-        <div className="flex gap-2">
-          {months.map((month, index) => (
-            <button
-              key={index}
-              className={`px-3 py-1 rounded ${index === 1 ? 'bg-blue-500 text-white' : 'border'}`}
-            >
-              {month}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Dates */}
-      <div className="flex gap-2 overflow-x-auto mb-4">
-        {dates.map((date, index) => (
-          <button
-            key={index}
-            className="px-3 py-1 text-sm border rounded"
-          >
-            {date}
-          </button>
-        ))}
-      </div>
-
-      {/* Students List */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h2 className="mb-4 font-semibold">TALABALAR</h2>
-        <div className="space-y-2">
-          {students.map((student) => (
-            <div key={student.id} 
-                 className="flex items-center justify-between p-2 bg-white rounded hover:bg-gray-50">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-500">{student.id}.</span>
-                <span className="text-blue-600">{student.name}</span>
-              </div>
-              <button
-                onClick={() => toggleAttendance(student.id)}
-                className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  attendance[student.id] === 'present' 
-                    ? 'bg-blue-500 text-white' 
-                    : attendance[student.id] === 'absent'
-                      ? 'bg-red-500 text-white'
-                      : 'border'
-                }`}
-              >
-                {attendance[student.id] === 'present' ? '✓' : attendance[student.id] === 'absent' ? '✕' : ''}
-              </button>
-            </div>
-          ))}
-        </div>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse bg-white">
+          <thead>
+            <tr>
+              <th className="border p-3 text-left">№</th>
+              <th className="border p-3 text-left">F.I.O</th>
+              <th className="border p-3 text-left">Telefon</th>
+              <th className="border p-3 text-center">Holati</th>
+            </tr>
+          </thead>
+          <tbody>
+            {students.map((student) => (
+              <tr key={student.id} className="hover:bg-gray-50">
+                <td className="border p-3">{student.id}</td>
+                <td className="border p-3 text-blue-600">{student.name}</td>
+                <td className="border p-3">{student.phone}</td>
+                <td className="border p-3">
+                  <div className="flex justify-center gap-2">
+                    <button
+                      onClick={() => handleAttendance(student.id, 'present')}
+                      className={`px-4 py-1 rounded ${
+                        getStudentStatus(student.id) === 'present'
+                          ? 'bg-green-500 text-white'
+                          : 'bg-gray-200'
+                      }`}
+                    >
+                      Bor
+                    </button>
+                    <button
+                      onClick={() => handleAttendance(student.id, 'absent')}
+                      className={`px-4 py-1 rounded ${
+                        getStudentStatus(student.id) === 'absent'
+                          ? 'bg-red-500 text-white'
+                          : 'bg-gray-200'
+                      }`}
+                    >
+                      Yo'q
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
